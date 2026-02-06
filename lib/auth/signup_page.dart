@@ -208,16 +208,6 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                         ),
 
-                              const SizedBox(height: 20,),
-
-                                Align(
-                          alignment: Alignment.center,
-                         
-                            child: const Text(
-                              "OR",
-                              style: TextStyle(color: Colors.white,),
-                            ),
-                          ),
                            
                            const SizedBox(height: 20,),
                         /// GOOGLE SIGN UP
