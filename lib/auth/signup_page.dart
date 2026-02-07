@@ -116,8 +116,8 @@ class _SignUpPageState extends State<SignUpPage> {
           : SingleChildScrollView(
               padding: EdgeInsets.only(
                 top: padding.top,
-                left: padding.left + horizontalPadding,
-                right: padding.right + horizontalPadding,
+                left: padding.left,
+                right: padding.right,
                 bottom: viewInsets.bottom + padding.bottom + 24,
               ),
               child: Column(
