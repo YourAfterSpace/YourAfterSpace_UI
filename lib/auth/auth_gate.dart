@@ -24,9 +24,6 @@ class _AuthGateState extends State<AuthGate> {
   try {
     final session = await Amplify.Auth.fetchAuthSession();
 
-    print('🔐 isSignedIn: ${session.isSignedIn}');
-    print('🔐 session type: ${session.runtimeType}');
-
     _signedIn = session.isSignedIn;
   } catch (e) {
     print('❌ fetchAuthSession error: $e');
