@@ -13,9 +13,14 @@ void main() async {
 
 Future<void> _configureAmplify() async {
   try {
-    await Amplify.addPlugin(AmplifyAuthCognito(),);
-    await Amplify.configure(amplifyconfig,);
-  } catch (_) {}
+    await Amplify.addPlugin(AmplifyAuthCognito());
+    await Amplify.configure(amplifyconfig);
+  } catch (e, st) {
+    // Log so we don't silently fail (e.g. InvalidAccountTypeException)
+    debugPrint('Amplify configure error: $e');
+    debugPrint('$st');
+    rethrow;
+  }
 }
 
 
