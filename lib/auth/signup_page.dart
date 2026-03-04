@@ -3,9 +3,9 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import '../widgets/error_parser.dart';
 import '../widgets/google_button.dart';
 import '../widgets/helper.dart';
-import '../home/home_page.dart';
 import 'login_page.dart';
 import 'confirm_signup_page.dart';
+import '../profile/profile_onboarding_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -30,7 +30,7 @@ class _SignUpPageState extends State<SignUpPage> {
       await Amplify.Auth.signInWithWebUI(
         provider: AuthProvider.google,
       );
-      if (mounted) _goHome();
+      if (mounted) _goToOnboarding();
     } catch (e) {
       if (mounted) showError(context, parseAmplifyError(e));
     } finally {
@@ -89,10 +89,10 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  void _goHome() {
+  void _goToOnboarding() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const HomePage(),),
+      MaterialPageRoute(builder: (_) => const ProfileOnboardingPage()),
     );
   }
 

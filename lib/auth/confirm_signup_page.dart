@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 
 import '../widgets/helper.dart';
-import '../home/home_page.dart';
+import '../profile/profile_onboarding_page.dart';
 import '../widgets/error_parser.dart';
 
 class ConfirmSignUpPage extends StatefulWidget {
@@ -32,9 +32,10 @@ class _ConfirmSignUpPageState extends State<ConfirmSignUpPage> {
         confirmationCode: codeCtrl.text.trim(),
       );
 
+      if (!context.mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomePage(),),
+        MaterialPageRoute(builder: (_) => const ProfileOnboardingPage()),
       );
     } catch (e) {
       showError(context, parseAmplifyError(e));

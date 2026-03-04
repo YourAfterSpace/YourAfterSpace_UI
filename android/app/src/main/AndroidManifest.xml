@@ -49,5 +49,10 @@
         <intent>
             <action android:name="android.support.customtabs.action.CustomTabsService"/>
         </intent>
+        <!-- Required for UPI payment deep links (Pay now → UPI apps) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="upi"/>
+        </intent>
     </queries>
 </manifest>

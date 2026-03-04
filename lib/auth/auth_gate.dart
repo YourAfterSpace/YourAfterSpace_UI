@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import '../home/home_page.dart';
+import '../profile/profile_api.dart';
+import '../profile/profile_onboarding_page.dart';
 import 'login_page.dart';
 
 class AuthGate extends StatefulWidget {
@@ -13,6 +15,7 @@ class AuthGate extends StatefulWidget {
 class _AuthGateState extends State<AuthGate> {
   bool _loading = true;
   bool _signedIn = false;
+  bool _profileComplete = false;
 
   @override
   void initState() {
@@ -21,27 +24,31 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   Future<void> _checkAuth() async {
-  try {
-    final session = await Amplify.Auth.fetchAuthSession();
-
-    _signedIn = session.isSignedIn;
-  } catch (e) {
-    print('❌ fetchAuthSession error: $e');
-    _signedIn = false;
+    try {
+      final session = await Amplify.Auth.fetchAuthSession();
+      _signedIn = session.isSignedIn;
+      if (_signedIn) {
+        _profileComplete = await getProfileExists();
+      } else {
+        _profileComplete = false;
+      }
+    } catch (e) {
+      // Only auth/session failure → treat as not signed in
+      debugPrint('AuthGate error: $e');
+      _signedIn = false;
+      _profileComplete = false;
+    }
+    if (mounted) setState(() => _loading = false);
   }
-
-  setState(() => _loading = false);
-}
-
 
   @override
   Widget build(BuildContext context) {
     if (_loading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(),),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    return _signedIn ? const HomePage() : const LoginPage();
+    if (!_signedIn) return const LoginPage();
+    return _profileComplete ? const HomePage() : const ProfileOnboardingPage();
   }
 }
