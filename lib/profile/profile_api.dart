@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../config/app_config.dart';
+import '../widgets/helper.dart';
 import 'user_profile.dart' as profile_models;
 
 
@@ -19,28 +20,27 @@ class ProfileApiException implements Exception {
   String toString() => 'ProfileApiException: $message (status: $statusCode)';
 }
 
-/// Returns the Cognito user sub (identity id) for API headers.
-/// Your Spring Boot backend expects this in x-amzn-oidc-identity.
-Future<String?> _getCognitoUserSub() async {
+/// Returns the Cognito ID token (JWT) for API auth. Backend expects Bearer token or X-Id-Token.
+Future<String?> _getCognitoIdToken() async {
   try {
-    final cognitoPlugin =
-        Amplify.Auth.getPlugin(AmplifyAuthCognito.pluginKey);
-    final session = await cognitoPlugin.fetchAuthSession();
-    final sub = session.userSubResult.value;
-    return sub.isNotEmpty ? sub : null;
+    final session = await Amplify.Auth.fetchAuthSession();
+    final cognitoSession = session as CognitoAuthSession;
+    final tokens = cognitoSession.userPoolTokensResult.value;
+    final idToken = tokens.idToken.raw;
+    return idToken.isNotEmpty ? idToken : null;
   } catch (e) {
-    debugPrint('ProfileApi: failed to get user sub: $e');
+    debugPrint('ProfileApi: failed to get id token: $e');
     return null;
   }
 }
 
-/// Headers for profile API: Spring Boot expects x-amzn-oidc-identity with Cognito user id.
+/// API headers: Authorization Bearer token (backend accepts this; avoids CORS by not sending custom headers).
 Future<Map<String, String>> _profileHeaders() async {
-  final userSub = await _getCognitoUserSub();
-  if (userSub == null) return {};
+  final idToken = await _getCognitoIdToken();
+  if (idToken == null) return {};
   return {
     'Content-Type': 'application/json',
-    'x-amzn-oidc-identity': userSub,
+    'Authorization': 'Bearer $idToken',
   };
 }
 
@@ -101,7 +101,7 @@ Future<void> postQuestionnaire(Map<String, dynamic> answers) async {
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     final success = body['success'] as bool? ?? false;
     if (!success) {
-      final msg = body['message'] as String? ?? 'Save failed';
+      final msg = toStr(body['message']) ?? 'Save failed';
       throw ProfileApiException(msg, response.statusCode);
     }
     return;
@@ -109,7 +109,7 @@ Future<void> postQuestionnaire(Map<String, dynamic> answers) async {
   String message = 'Server error: ${response.statusCode}';
   try {
     final b = jsonDecode(response.body) as Map<String, dynamic>?;
-    if (b != null && b['message'] != null) message = b['message'] as String;
+    if (b != null && b['message'] != null) message = toStr(b['message']) ?? message;
   } catch (_) {}
   throw ProfileApiException(message, response.statusCode);
 }
@@ -132,7 +132,7 @@ Future<void> postUserProfile(profile_models.UserProfile profile) async {
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     final success = body['success'] as bool? ?? false;
     if (!success) {
-      final msg = body['message'] as String? ?? 'Profile save failed';
+      final msg = toStr(body['message']) ?? 'Profile save failed';
       throw ProfileApiException(msg, response.statusCode);
     }
     return;
@@ -142,7 +142,7 @@ Future<void> postUserProfile(profile_models.UserProfile profile) async {
   try {
     final body = jsonDecode(response.body) as Map<String, dynamic>?;
     if (body != null && body['message'] != null) {
-      message = body['message'] as String;
+      message = toStr(body['message']) ?? message;
     }
   } catch (_) {}
   throw ProfileApiException(message, response.statusCode);

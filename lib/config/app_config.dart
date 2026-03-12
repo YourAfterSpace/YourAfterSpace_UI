@@ -2,7 +2,7 @@
 /// Override at build/run: --dart-define=BASE_URL=https://api.example.com
 const String baseUrl = String.fromEnvironment(
   'BASE_URL',
-  defaultValue: 'http://localhost:3000',
+  defaultValue: 'https://ebg1xd8fv9.execute-api.ap-south-1.amazonaws.com/second',
 );
 
 /// Path suffix for user profile. Kept in code so only base URL changes per env.

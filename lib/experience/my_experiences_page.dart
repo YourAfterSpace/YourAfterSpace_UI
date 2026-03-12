@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/helper.dart';
 import 'experience_api.dart';
 import 'experience_detail_page.dart';
 
@@ -158,13 +159,13 @@ class _MyExperienceCard extends StatelessWidget {
 
   const _MyExperienceCard({required this.experience, required this.onTap});
 
-  String get _title => experience['title'] as String? ?? 'Experience';
-  String get _location => experience['location'] as String? ?? '';
-  String get _city => experience['city'] as String? ?? '';
-  String get _date => experience['experienceDate'] as String? ?? '';
-  String get _startTime => experience['startTime'] as String? ?? '';
+  String get _title => toStr(experience['title']) ?? 'Experience';
+  String get _location => toStr(experience['location']) ?? '';
+  String get _city => toStr(experience['city']) ?? '';
+  String get _date => toStr(experience['experienceDate']) ?? '';
+  String get _startTime => toStr(experience['startTime']) ?? '';
   num get _price => (experience['pricePerPerson'] as num?) ?? 0;
-  String get _currency => experience['currency'] as String? ?? 'USD';
+  String get _currency => toStr(experience['currency']) ?? 'USD';
   List<String> get _images {
     final i = experience['images'] as List<dynamic>?;
     return i?.map((e) => e.toString()).toList() ?? [];

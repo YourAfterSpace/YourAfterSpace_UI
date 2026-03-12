@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/helper.dart';
 import 'experience_api.dart';
 import 'experience_detail_page.dart';
 
@@ -56,12 +57,12 @@ class _SelectedExperiencesPageState extends State<SelectedExperiencesPage> {
   }
 
   Future<void> _onPayNow(BuildContext context, Map<String, dynamic> experience) async {
-    final experienceId = experience['experienceId'] as String?;
+    final experienceId = toStr(experience['experienceId']);
     if (experienceId == null || experienceId.isEmpty) return;
 
     final amount = (experience['pricePerPerson'] as num?)?.toDouble() ?? 0.0;
-    final title = experience['title'] as String? ?? 'Experience';
-    final currency = experience['currency'] as String? ?? 'USD';
+    final title = toStr(experience['title']) ?? 'Experience';
+    final currency = toStr(experience['currency']) ?? 'USD';
     final cu = currency == 'INR' ? 'INR' : 'INR'; // UPI typically INR; use INR for amount display
 
     // 1) Show UPI app picker (bottom sheet)
@@ -227,11 +228,11 @@ class _SelectedExperienceCard extends StatelessWidget {
     required this.onPayNow,
   });
 
-  String get _title => experience['title'] as String? ?? 'Experience';
-  String get _location => experience['location'] as String? ?? '';
-  String get _city => experience['city'] as String? ?? '';
+  String get _title => toStr(experience['title']) ?? 'Experience';
+  String get _location => toStr(experience['location']) ?? '';
+  String get _city => toStr(experience['city']) ?? '';
   num get _price => (experience['pricePerPerson'] as num?) ?? 0;
-  String get _currency => experience['currency'] as String? ?? 'USD';
+  String get _currency => toStr(experience['currency']) ?? 'USD';
   List<String> get _images {
     final i = experience['images'] as List<dynamic>?;
     return i?.map((e) => e.toString()).toList() ?? [];

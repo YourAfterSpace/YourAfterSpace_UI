@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/helper.dart';
 import 'profile_api.dart';
 import 'category_page.dart';
 
@@ -100,7 +101,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildCompletionCard() {
-    final overall = (_profileData?['overallProfileCompletionPercentage'] as num?)?.toDouble() ?? 0.0;
+    final raw = _profileData?['overallProfileCompletionPercentage'];
+    double overall = 0.0;
+    if (raw is num) overall = (raw as num).toDouble();
+    else if (raw is List && raw.isNotEmpty && raw.first is num) overall = (raw.first as num).toDouble();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -167,10 +171,13 @@ class _ProfilePageState extends State<ProfilePage> {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, i) {
         final cat = list[i] as Map<String, dynamic>;
-        final id = cat['id'] as String? ?? '';
-        final name = cat['name'] as String? ?? 'Category';
-        final imageUrl = cat['imageUrl'] as String?;
-        final percent = (percentages[id] as num?)?.toDouble() ?? 0.0;
+        final id = toStr(cat['id']) ?? '';
+        final name = toStr(cat['name']) ?? 'Category';
+        final imageUrl = toStr(cat['imageUrl']);
+        final pct = percentages[id];
+        double percent = 0.0;
+        if (pct is num) percent = (pct as num).toDouble();
+        else if (pct is List && pct.isNotEmpty && pct.first is num) percent = (pct.first as num).toDouble();
         return _CategoryCard(
           name: name,
           imageUrl: imageUrl,
@@ -222,7 +229,14 @@ class _CategoryCard extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 if (imageUrl != null && imageUrl!.isNotEmpty)
-                  Image.network(imageUrl!, fit: BoxFit.cover)
+                  Image.network(
+                    imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: _primary.withValues(alpha: 0.15),
+                      child: const Icon(Icons.category_rounded, size: 48, color: _primary),
+                    ),
+                  )
                 else
                   Container(
                     color: _primary.withValues(alpha: 0.15),

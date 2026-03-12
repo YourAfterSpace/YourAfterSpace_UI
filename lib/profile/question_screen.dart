@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/helper.dart';
 import 'profile_api.dart';
 
 const _primary = Color(0xFF0D9488);
@@ -55,14 +56,15 @@ class _QuestionScreenState extends State<QuestionScreen> {
     super.dispose();
   }
 
-  String get _type => widget.question['type'] as String? ?? 'TEXT';
+  String get _type => toStr(widget.question['type']) ?? 'TEXT';
   List<String> get _options {
-    final o = widget.question['options'] as List<dynamic>?;
-    return o?.map((e) => e.toString()).toList() ?? [];
+    final o = widget.question['options'];
+    if (o is! List) return [];
+    return o.map((e) => e.toString()).toList();
   }
 
   Future<void> _save() async {
-    final id = widget.question['id'] as String?;
+    final id = toStr(widget.question['id']);
     if (id == null) return;
 
     dynamic value;
@@ -97,8 +99,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.question['title'] as String? ?? 'Question';
-    final description = widget.question['description'] as String?;
+    final title = toStr(widget.question['title']) ?? 'Question';
+    final description = toStr(widget.question['description']);
 
     return Scaffold(
       backgroundColor: _surface,
@@ -140,7 +142,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
   Widget _buildInput() {
     if (_type == 'RATING') {
       return _RatingInput(
-        sentence: widget.question['description'] as String? ?? widget.question['title'] as String? ?? '',
+        sentence: toStr(widget.question['description']) ?? toStr(widget.question['title']) ?? '',
         scale: _options.isNotEmpty ? _options : _ratingScale,
         value: _singleChoice,
         onChanged: (v) => setState(() => _singleChoice = v),

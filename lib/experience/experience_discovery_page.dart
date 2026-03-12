@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../profile/profile_api.dart';
+import '../widgets/helper.dart';
 import 'experience_api.dart';
 import 'experience_detail_page.dart';
 
@@ -36,7 +37,7 @@ class _ExperienceDiscoveryPageState extends State<ExperienceDiscoveryPage> {
     });
     try {
       final profile = await getProfileData();
-      final city = profile?['city'] as String?;
+      final city = toStr(profile?['city']);
       final list = await getExperiences(city: city);
       final ids = await getInterestedExperienceIds();
       if (mounted) {
@@ -74,6 +75,11 @@ class _ExperienceDiscoveryPageState extends State<ExperienceDiscoveryPage> {
         const SnackBar(content: Text('Could not update interest')),
       );
     }
+  }
+
+  void _toggleInterest(String experienceId) {
+    if (experienceId.isEmpty) return;
+    _setInterest(experienceId, !_interestedIds.contains(experienceId));
   }
 
   @override
@@ -121,8 +127,8 @@ class _ExperienceDiscoveryPageState extends State<ExperienceDiscoveryPage> {
                           final exp = _experiences[i];
                           return _ExperienceCard(
                             experience: exp,
-                            isInterested: _interestedIds.contains(exp['experienceId'] as String?),
-                            onInterested: () => _setInterest(exp['experienceId'] as String, true),
+                            isInterested: _interestedIds.contains(toStr(exp['experienceId'])),
+                            onInterested: () => _toggleInterest(toStr(exp['experienceId']) ?? ''),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -152,11 +158,11 @@ class _ExperienceCard extends StatelessWidget {
     required this.onTap,
   });
 
-  String get _title => experience['title'] as String? ?? 'Experience';
-  String get _location => experience['location'] as String? ?? '';
-  String get _city => experience['city'] as String? ?? '';
+  String get _title => toStr(experience['title']) ?? 'Experience';
+  String get _location => toStr(experience['location']) ?? '';
+  String get _city => toStr(experience['city']) ?? '';
   num get _price => (experience['pricePerPerson'] as num?) ?? 0;
-  String get _currency => experience['currency'] as String? ?? 'USD';
+  String get _currency => toStr(experience['currency']) ?? 'USD';
   List<String> get _images {
     final i = experience['images'] as List<dynamic>?;
     return i?.map((e) => e.toString()).toList() ?? [];
@@ -201,9 +207,9 @@ class _ExperienceCard extends StatelessWidget {
                       Text('$_currency $_price per person', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _primary)),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
-                        onPressed: isInterested ? null : onInterested,
-                        icon: Icon(Icons.favorite_rounded, size: 20, color: isInterested ? _primary : _textSecondary),
-                        label: Text(isInterested ? 'Interested' : 'Interested', style: TextStyle(fontSize: 14, color: isInterested ? _primary : _textSecondary)),
+                        onPressed: onInterested,
+                        icon: Icon(isInterested ? Icons.favorite_rounded : Icons.favorite_border_rounded, size: 20, color: isInterested ? _primary : _textSecondary),
+                        label: Text('Interested', style: TextStyle(fontSize: 14, color: isInterested ? _primary : _textSecondary)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: _primary,
                           side: BorderSide(color: isInterested ? _primary : _textSecondary),

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/app_config.dart';
 import '../profile/profile_api.dart';
+import '../widgets/helper.dart';
 
 /// GET /v1/experiences/all?city={cityName}. Pass null for all experiences.
 Future<List<Map<String, dynamic>>> getExperiences({String? city}) async {
@@ -120,7 +121,7 @@ Future<List<String>> getInterestedExperienceIds() async {
     if (!success || data == null) return [];
     final list = data is List ? data : <dynamic>[];
     return list.map((e) {
-      if (e is Map && e['experienceId'] != null) return e['experienceId'] as String;
+      if (e is Map && e['experienceId'] != null) return toStr(e['experienceId']) ?? '';
       if (e is String) return e;
       return e?.toString() ?? '';
     }).where((s) => s.isNotEmpty).toList();

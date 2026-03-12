@@ -1,27 +1,40 @@
 import 'package:flutter/material.dart';
+import '../widgets/helper.dart';
+import 'experience_api.dart';
 
 const _primary = Color(0xFF0D9488);
 const _textPrimary = Color(0xFF1E293B);
 const _textSecondary = Color(0xFF64748B);
 
-class ExperienceDetailPage extends StatelessWidget {
+class ExperienceDetailPage extends StatefulWidget {
   final Map<String, dynamic> experience;
 
   const ExperienceDetailPage({super.key, required this.experience});
 
-  String get _title => experience['title'] as String? ?? 'Experience';
-  String get _description => experience['description'] as String? ?? '';
-  String get _location => experience['location'] as String? ?? '';
-  String get _city => experience['city'] as String? ?? '';
-  String get _address => experience['address'] as String? ?? '';
-  String get _experienceDate => experience['experienceDate'] as String? ?? '';
-  String get _startTime => experience['startTime'] as String? ?? '';
-  String get _endTime => experience['endTime'] as String? ?? '';
-  String get _requirements => experience['requirements'] as String? ?? '';
-  String get _cancellationPolicy => experience['cancellationPolicy'] as String? ?? '';
-  String get _contactInfo => experience['contactInfo'] as String? ?? '';
+  @override
+  State<ExperienceDetailPage> createState() => _ExperienceDetailPageState();
+}
+
+class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
+  bool _isInterested = false;
+  bool _loadingInterest = true;
+
+  Map<String, dynamic> get experience => widget.experience;
+
+  String get _experienceId => toStr(experience['experienceId']) ?? '';
+  String get _title => toStr(experience['title']) ?? 'Experience';
+  String get _description => toStr(experience['description']) ?? '';
+  String get _location => toStr(experience['location']) ?? '';
+  String get _city => toStr(experience['city']) ?? '';
+  String get _address => toStr(experience['address']) ?? '';
+  String get _experienceDate => toStr(experience['experienceDate']) ?? '';
+  String get _startTime => toStr(experience['startTime']) ?? '';
+  String get _endTime => toStr(experience['endTime']) ?? '';
+  String get _requirements => toStr(experience['requirements']) ?? '';
+  String get _cancellationPolicy => toStr(experience['cancellationPolicy']) ?? '';
+  String get _contactInfo => toStr(experience['contactInfo']) ?? '';
   num get _pricePerPerson => (experience['pricePerPerson'] as num?) ?? 0;
-  String get _currency => experience['currency'] as String? ?? 'USD';
+  String get _currency => toStr(experience['currency']) ?? 'USD';
   int get _maxCapacity => (experience['maxCapacity'] as int?) ?? 0;
   int get _remainingCapacity => (experience['remainingCapacity'] as int?) ?? 0;
   List<String> get _images {
@@ -32,7 +45,40 @@ class ExperienceDetailPage extends StatelessWidget {
     final t = experience['tags'] as List<dynamic>?;
     return t?.map((e) => e.toString()).toList() ?? [];
   }
-  String get _type => experience['type'] as String? ?? '';
+  String get _type => toStr(experience['type']) ?? '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInterested();
+  }
+
+  Future<void> _loadInterested() async {
+    final ids = await getInterestedExperienceIds();
+    if (mounted) {
+      setState(() {
+        _isInterested = ids.contains(_experienceId);
+        _loadingInterest = false;
+      });
+    }
+  }
+
+  Future<void> _toggleInterested() async {
+    if (_experienceId.isEmpty) return;
+    setState(() => _loadingInterest = true);
+    final newValue = !_isInterested;
+    final ok = await putExperienceInterest(_experienceId, newValue);
+    if (!mounted) return;
+    setState(() {
+      _loadingInterest = false;
+      if (ok) _isInterested = newValue;
+    });
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not update interest')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +137,25 @@ class ExperienceDetailPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text('$_currency $_pricePerPerson per person · $_remainingCapacity of $_maxCapacity spots left',
                       style: const TextStyle(fontSize: 14, color: _textSecondary)),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _loadingInterest ? null : _toggleInterested,
+                      icon: _loadingInterest
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : Icon(_isInterested ? Icons.favorite_rounded : Icons.favorite_border_rounded, size: 20, color: _isInterested ? _primary : _textSecondary),
+                      label: Text(
+                        _loadingInterest ? 'Loading...' : (_isInterested ? 'Interested' : 'Mark as interested'),
+                        style: TextStyle(fontSize: 15, color: _isInterested ? _primary : _textSecondary),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _primary,
+                        side: BorderSide(color: _isInterested ? _primary : _textSecondary),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   if (_description.isNotEmpty) ...[
                     const Text('Description', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _textPrimary)),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/helper.dart';
 import 'profile_api.dart';
 import 'question_screen.dart';
 
@@ -41,7 +42,7 @@ class _CategoryPageState extends State<CategoryPage> {
       MaterialPageRoute(
         builder: (_) => QuestionScreen(
           question: question,
-          categoryId: _categoryData!['id'] as String? ?? '',
+          categoryId: toStr(_categoryData!['id']) ?? '',
           onSaved: () async {
             widget.onSaved?.call();
             await _refreshCategory();
@@ -57,7 +58,7 @@ class _CategoryPageState extends State<CategoryPage> {
       final data = await getProfileData();
       if (data == null || !mounted) return;
       final list = data['questionnaireByCategory'] as List<dynamic>?;
-      final id = _categoryData?['id'] as String?;
+      final id = toStr(_categoryData?['id']);
       if (list != null && id != null) {
         for (final c in list) {
           if ((c as Map<String, dynamic>)['id'] == id) {
@@ -71,7 +72,7 @@ class _CategoryPageState extends State<CategoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final name = _categoryData?['name'] as String? ?? 'Category';
+    final name = toStr(_categoryData?['name']) ?? 'Category';
     final questions = _categoryData?['questions'] as List<dynamic>? ?? [];
 
     return Scaffold(
@@ -90,7 +91,7 @@ class _CategoryPageState extends State<CategoryPage> {
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, i) {
                 final q = questions[i] as Map<String, dynamic>;
-                final title = q['title'] as String? ?? 'Question';
+                final title = toStr(q['title']) ?? 'Question';
                 final answer = q['answer'];
                 String subtitle = '';
                 if (answer != null) {
