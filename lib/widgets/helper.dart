@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 
+/// Coerce API value (String or List) to String? to avoid "List is not a subtype of String?".
+String? toStr(dynamic v) {
+  if (v == null) return null;
+  if (v is String) return v;
+  if (v is List && v.isNotEmpty) return v.first?.toString();
+  return v.toString();
+}
+
 void showError(
   BuildContext context,
   String message, {
